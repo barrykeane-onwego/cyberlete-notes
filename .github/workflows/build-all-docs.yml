@@ -1,0 +1,36 @@
+name: Rebuild ALL_DOCS.md
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Run build script
+        run: |
+          chmod +x scripts/build_all_docs.sh
+          ./scripts/build_all_docs.sh
+
+      - name: Commit and push changes
+        run: |
+          if [[ -n "$(git status --porcelain ALL_DOCS.md)" ]]; then
+            git add ALL_DOCS.md
+            git commit -m "chore(ci): auto-rebuild ALL_DOCS.md"
+            git push
+          else
+            echo "No changes to commit."
+          fi
